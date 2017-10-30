@@ -29,8 +29,17 @@ srand(12345) # For reproducibility
     end
 
     @testset "start GA" begin
-        bestcost, gen, time = BRKGA.start(tsp)
-        @show bestcost
-        @test bestcost == 10030
+        bestcost, gen, totaltime, bestsoltime = BRKGA.start(tsp)
+        @test isapprox(bestcost, 10030.)
+        @test gen == 1000
+        @test isapprox(totaltime, bestsoltime; atol=1e-1)
+
+        para.maxgen = 10000
+        bestcost, gen, totaltime, bestsoltime = BRKGA.start(tsp; targetcost=10069.)
+        @test isapprox(bestcost, 10047.0)
+
+        bestcost, gen, totaltime, bestsoltime = BRKGA.start(tsp; maxstableit=50)
+        @test isapprox(bestcost, 8433.)
+        @test gen == 2495
     end
 end

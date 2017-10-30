@@ -126,6 +126,7 @@ Start the GA algorithm
 """
 function start(prob::BRKGAProblem; targetcost=0, maxstableit=Inf)
     tic()
+    startt = time()
     para = param(prob)
     pop = randpop(prob, maxpop(para))
 
@@ -133,6 +134,8 @@ function start(prob::BRKGAProblem; targetcost=0, maxstableit=Inf)
     g = 0
     stableit = 0 # Iterations without improvement
     cursol = 0
+    bestsoltime = 0
+    bestsolution = Inf
     for g = 1:maxgen(para)
         sort!(pop, by=fitness)
         cropop = crosspop(prob, pop)
@@ -145,18 +148,24 @@ function start(prob::BRKGAProblem; targetcost=0, maxstableit=Inf)
         if cursol < targetcost
             break
         end
-        if lastsol == cursol
-            info("Iteration without improvement")
+        if isapprox(lastsol, cursol)
+            info("Iteration without improvement $(stableit)")
             stableit += 1
             if stableit >= maxstableit
                 break
             end
+        else
+            stableit = 0
+        end
+        if cursol < bestsolution
+            bestsoltime = time() -startt
+            bestsolution = cursol
         end
         lastsol = cursol
     end
-    time = toq()
-    info("Final time $(time)")
-    return cursol, g, time
+    totaltime = toq()
+    info("Final time $(totaltime)")
+    return cursol, g, totaltime, bestsoltime
 end
 
 end # BRKGA
